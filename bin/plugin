@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+// Add this shebang at the top of your compiled JS file
+// or create a wrapper script that calls your compiled plugin
+
+import { EnvoyProxyPlugin } from "../dist/src/index"; // path to my plugin
+import { PluginMain } from "@hembrow-innovations/odm-plugin-js"; // path to library
+
+const plugin = new EnvoyProxyPlugin();
+const main = new PluginMain(plugin);
+
+main.start().catch((error) => {
+  console.error("Failed to start plugin:", error);
+  process.exit(1);
+});

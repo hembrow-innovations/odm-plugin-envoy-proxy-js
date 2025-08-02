@@ -1,0 +1,37 @@
+{
+  "name": "@hembrow-innovations/odm-plugin-envoy-proxy-js",
+  "version": "0.0.1",
+  "description": "odm plugin to perform task on envoy proxy yaml files",
+  "main": "bin/plugin",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hembrow-innovations/odm-plugin-envoy-proxy-js.git"
+  },
+  "author": "hembrow-innvoations",
+  "license": "MIT",
+  "bin": "bin/plugin",
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@hembrow-innovations/odm-plugin-js": "^0.0.2",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^24.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
+    "eslint-plugin-jsdoc": "^52.0.2",
+    "ts-proto": "^2.7.5",
+    "typescript": "^5.8.3"
+  }
+}
