@@ -185,7 +185,7 @@ export class ConfigDiscover {
    * Get the base yaml configuration
    *
    * @public
-   * @returns {EnvoyConfig}
+   * @returns {EnvoyConfig} an envoy configuration base/template
    */
   public collectBase(): EnvoyConfig {
     const baseConfig = YamlTools.read_yaml(this.baseConfigPath);

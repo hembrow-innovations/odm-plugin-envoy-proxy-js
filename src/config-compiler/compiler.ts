@@ -1,4 +1,4 @@
-import { Cluster, EnvoyConfig, Route, ServiceConfg } from "../config-types";
+import { EnvoyConfig, Route, ServiceConfg } from "../config-types";
 
 /**
  * The Compiler class is responsible for merging service configurations into a

@@ -56,9 +56,20 @@ export interface Filter {
  * TypedConfig holds the actual configuration for a filter.
  * This is a union type to correctly represent different filter configurations.
  */
-export type TypedConfig = HttpConnectionManagerTypedConfig; // Use 'unknown' for configurations not explicitly defined here
+// export type TypedConfig = HttpConnectionManagerTypedConfig; // Use 'unknown' for configurations not explicitly defined here
 // ! this type has other types
 // TODO add other connection manager types
+
+export type TypedConfig =
+  | {
+      "@type": string;
+      stat_prefix: string;
+      codec_type: string;
+      route_config: RouteConfig;
+      http_filters: HTTPFilter[];
+      access_log: AccessLog[];
+    }
+  | HttpConnectionManagerTypedConfig;
 
 /**
  * TypedConfig for the HttpConnectionManager filter.
@@ -454,6 +465,33 @@ export type HttpProtocolOptions = {
   max_request_headers_kb: number;
 };
 
+export type UpstreamConnectionOptions = {
+  tcp_keepalive: TcpKeepalive;
+  socket_options: SocketOption[];
+};
+
+export type TcpKeepalive = {
+  keepalive_probes: number;
+  keepalive_time: number;
+  keepalive_interval: number;
+};
+export type SocketOption = {
+  level: number;
+  name: number;
+  value: number;
+  buf_value: string;
+};
+export type CommonLbConfig = {
+  healthy_panic_threshold: Percent;
+  locality_weighted_lb_config: LocalityWeightedLbConfig;
+  update_merge_window: DurationString;
+  ignore_new_hosts_until_first_hc: boolean;
+  close_connections_on_host_set_change: boolean;
+  consistent_hashing_lb_config: ConsistentHashingLbConfig;
+};
+
+export type LocalityWeightedLbConfig = Record;
+
 // Cluster represents an Envoy cluster configuration
 export interface Cluster {
   name: string;
@@ -650,6 +688,92 @@ export interface RetryBudget {
   min_retry_concurrency?: number;
 }
 
-// ... and so on for the rest of the structs
-// To keep the response concise, I will not include the rest of the structs here,
-// as the conversion pattern is consistent.
+export type TransportSocket = {
+  name: string;
+  typed_config: string;
+};
+export type Policy = {
+  drop_overloads: DropOverload[];
+  overprovisioning_factor: number;
+  endpoint_stale_after: DurationString;
+  weighted_priority_health: boolean;
+};
+export type DropOverload = {
+  category: string;
+  drop_percentage: Percent;
+};
+export type Percent = {
+  value: number;
+};
+export type EnvoyHealthCheckConfig = {
+  port_value: number;
+  hostname: string;
+};
+export type StatusRange = {
+  start: number;
+  end: number;
+};
+export type StringMatcher = {
+  exact: string;
+  prefix: string;
+  suffix: string;
+  safe_regex: string;
+  contains: string;
+};
+export type TlsOptions = {
+  alpn_protocols: string;
+};
+
+export type ConsistentHashingLbConfig = {
+  use_hostname_for_hashing: boolean;
+  hash_balance_factor: number;
+};
+export type UpstreamHttpProtocolOptions = {
+  auto_sni: boolean;
+  auto_san_validation: boolean;
+};
+export type CommonHttpProtocolOptions = {
+  idle_timeout: DurationString;
+  max_connection_duration: DurationString;
+  max_headers_count: number;
+  max_stream_duration: DurationString;
+  headers_with_underscores_action: string;
+  max_request_headers_kb: number;
+};
+export type DnsFailureRefreshRate = {
+  base_interval: DurationString;
+  max_interval: DurationString;
+};
+export type LbSubsetConfig = {
+  fallback_policy: string;
+  default_subset: string;
+  subset_selectors: SubsetSelector[];
+  locality_weight_aware: boolean;
+  scale_locality_weight: boolean;
+  panic_mode_any: boolean;
+  list_as_any: boolean;
+  metadata_fallback_policy: string;
+};
+export type SubsetSelector = {
+  keys: string;
+  fallback_policy: string;
+  single_host_per_subset: boolean;
+};
+export type RingHashLbConfig = {
+  minimum_ring_size: number;
+  hash_function: string;
+  maximum_ring_size: number;
+};
+export type MaglevLbConfig = {
+  table_size: number;
+};
+export type OriginalDstLbConfig = {
+  use_http_header: boolean;
+};
+export type LeastRequestLbConfig = {
+  choice_count: number;
+};
+export type PreconnectPolicy = {
+  per_upstream_preconnect_ratio: number;
+  predictive_preconnect_ratio: number;
+};
