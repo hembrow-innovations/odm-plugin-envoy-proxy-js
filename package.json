@@ -1,6 +1,6 @@
 {
   "name": "@hembrow-innovations/odm-plugin-envoy-proxy-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "odm plugin to perform task on envoy proxy yaml files",
   "main": "bin/plugin",
   "type": "module",
