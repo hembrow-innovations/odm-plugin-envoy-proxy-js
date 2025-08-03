@@ -34,79 +34,36 @@ export class Compiler {
   }
 
   /**
-   * Safely retrieves the routes from the first virtual host of the first listener in the configuration.
-   * It performs extensive null-checking to prevent runtime errors.
-   *
-   * @private
-   * @param {EnvoyConfig} config - The Envoy configuration to extract routes from.
-   * @returns {Route[]} A new array of routes, or an empty array if the path does not exist.
-   */
-  private getRouteArray(config: EnvoyConfig): Route[] {
-    const listeners = config.static_resources.listeners;
-    if (
-      listeners &&
-      listeners.length > 0 &&
-      listeners[0].filter_chains &&
-      listeners[0].filter_chains.length > 0 &&
-      listeners[0].filter_chains[0].filters &&
-      listeners[0].filter_chains[0].filters.length > 0 &&
-      listeners[0].filter_chains[0].filters[0].typed_config &&
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config &&
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config
-        .virtual_hosts &&
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config
-        .virtual_hosts.length > 0
-    ) {
-      // Returns a new array to prevent modifying the original object by reference.
-      return [
-        ...listeners[0].filter_chains[0].filters[0].typed_config.route_config
-          .virtual_hosts[0].routes,
-      ];
-    } else {
-      return [];
-    }
-  }
-
-  /**
    * Adds new routes to the existing route array of the first virtual host.
    * This method returns a new EnvoyConfig object to ensure immutability.
    *
    * @private
-   * @param {EnvoyConfig} config - The base Envoy configuration.
-   * @param {Route[]} routes - An array of new routes to add.
-   * @returns {EnvoyConfig} A new EnvoyConfig object with the added routes.
+   * @param {Route[]} routesToAdd - An array of new routes to add.
+   * @returns {void} return void
    */
-  private addRoute(config: EnvoyConfig, routes: Route[]): EnvoyConfig {
-    const listeners = { ...config.static_resources.listeners };
+  private addRoute(routesToAdd: Route[]): void {
+    // Null check
     if (
-      listeners &&
-      listeners.length > 0 &&
-      listeners[0].filter_chains &&
-      listeners[0].filter_chains.length > 0 &&
-      listeners[0].filter_chains[0].filters &&
-      listeners[0].filter_chains[0].filters.length > 0 &&
-      listeners[0].filter_chains[0].filters[0].typed_config &&
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config &&
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config
-        .virtual_hosts &&
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config
-        .virtual_hosts.length > 0
+      this.store &&
+      this.store.static_resources.listeners.length > 0 &&
+      this.store.static_resources.listeners[0].filter_chains &&
+      this.store.static_resources.listeners[0].filter_chains.length > 0 &&
+      this.store.static_resources.listeners[0].filter_chains[0].filters &&
+      this.store.static_resources.listeners[0].filter_chains[0].filters.length >
+        0 &&
+      this.store.static_resources.listeners[0].filter_chains[0].filters[0]
+        .typed_config &&
+      this.store.static_resources.listeners[0].filter_chains[0].filters[0]
+        .typed_config.route_config &&
+      this.store.static_resources.listeners[0].filter_chains[0].filters[0]
+        .typed_config.route_config.virtual_hosts &&
+      this.store.static_resources.listeners[0].filter_chains[0].filters[0]
+        .typed_config.route_config.virtual_hosts.length > 0
     ) {
-      listeners[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes =
-        [
-          ...listeners[0].filter_chains[0].filters[0].typed_config.route_config
-            .virtual_hosts[0].routes,
-          ...routes,
-        ];
-      return {
-        ...config,
-        static_resources: {
-          ...config.static_resources,
-          listeners: listeners,
-        },
-      };
-    } else {
-      return { ...config };
+      this.store.static_resources.listeners[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes =
+        this.store.static_resources.listeners[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes.concat(
+          routesToAdd
+        );
     }
   }
 
@@ -116,38 +73,28 @@ export class Compiler {
    * and appends new routes.
    *
    * @private
-   * @param {EnvoyConfig} base - The base configuration.
    * @param {ServiceConfg} service - The service configuration to merge.
-   * @returns {EnvoyConfig} A new EnvoyConfig object with the merged data.
+   * @returns {void} returns void
    */
-  private mergeConfig(base: EnvoyConfig, service: ServiceConfg): EnvoyConfig {
-    let envoyConfig: EnvoyConfig = { ...base };
-
+  private mergeConfig(service: ServiceConfg): void {
+    if (!this.store) return;
     // Merge clusters
     for (const newCluster of service.clusters) {
       // Get index if cluster already exists
-      const hasCluster = envoyConfig.static_resources.clusters.findIndex(
+      const hasCluster = this.store.static_resources.clusters.findIndex(
         (cluster) => newCluster.name === cluster.name
       );
-
       if (hasCluster === -1) {
-        envoyConfig.static_resources.clusters.push(newCluster);
+        this.store.static_resources.clusters.push(newCluster);
       } else {
-        envoyConfig.static_resources.clusters[hasCluster] = newCluster;
+        this.store.static_resources.clusters[hasCluster] = newCluster;
       }
     }
 
     // Merge Routes
-    const existingRoutes = this.getRouteArray(envoyConfig);
-
     // TODO: A more robust conflict detection/resolution mechanism should be implemented here.
     // The current approach simply appends the new routes.
-    envoyConfig = this.addRoute(envoyConfig, [
-      ...existingRoutes,
-      ...service.routes,
-    ]);
-
-    return { ...envoyConfig };
+    this.addRoute(service.routes);
   }
 
   /**
@@ -155,14 +102,22 @@ export class Compiler {
    * and merging them into the base configuration.
    *
    * @public
-   * @returns {(EnvoyConfig | null)} The final, merged Envoy configuration, or null if the initial store was null.
+   * @returns {void} return void
    */
-  public build(): EnvoyConfig | null {
+  public build(): void {
     for (const s of this.serviceConfigs) {
-      if (!this.store) return null;
-      this.store = this.mergeConfig(this.store, s);
+      if (!this.store) return;
+      this.mergeConfig(s);
     }
+  }
 
+  /**
+   * Getter method to get envoy configuration
+   *
+   * @public
+   * @returns {(EnvoyConfig | null)} return envoy configuration
+   */
+  public getStore(): EnvoyConfig | null {
     return this.store;
   }
 }

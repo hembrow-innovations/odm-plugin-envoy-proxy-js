@@ -90,7 +90,10 @@ class EnvoyProxyPlugin implements PluginExecuter {
       const compiler = new Compiler(baseConfig, services);
 
       // Build the final, compiled configuration
-      const compiledConfig = compiler.build();
+      compiler.build();
+      const compiledConfig = compiler.getStore();
+      if (!compiledConfig)
+        throw new Error("envoy proxy configuration compilation failed");
 
       // Write the compiled configuration to a file if it exists
       if (compiledConfig) YamlTools.write_yaml(compiledConfig, options.output);

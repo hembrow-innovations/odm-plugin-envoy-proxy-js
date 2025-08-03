@@ -11,8 +11,12 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
+
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist", "example"]
 }
