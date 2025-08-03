@@ -1,0 +1,8 @@
+{
+    "name": "envoy-proxy-plugin",
+    "version": "0.0.1",
+    "language": "javascript",
+    "source": "bin/plugin",
+    "type": "npm",
+    "package": "@hembrow-innovations/odm-plugin-envoy-proxy-js"
+}
